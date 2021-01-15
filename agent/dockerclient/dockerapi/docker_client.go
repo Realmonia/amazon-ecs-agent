@@ -501,7 +501,7 @@ func (dg *dockerGoClient) getAuthdata(image string, authData *apicontainer.Regis
 		}
 		seelog.Infof("===========================")
 		seelog.Infof("Username: %v", authConfig.Username)
-		seelog.Infof("Username: %v", authConfig.Password)
+		seelog.Infof("Password: %v", authConfig.Password)
 		seelog.Infof("===========================")
 		return authConfig, nil
 	}
