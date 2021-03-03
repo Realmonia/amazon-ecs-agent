@@ -23,7 +23,7 @@ else
 endif
 
 ifeq (${TARGET_OS},windows)
-	GO_VERSION=1.12
+	GO_VERSION=$(shell cat ./GO_VERSION_WINDOWS)
 else
 	GO_VERSION=$(shell cat ./GO_VERSION)
 endif
@@ -45,7 +45,7 @@ gobuild:
 static:
 	./scripts/build
 
-# Cross-platform build target for travis
+# Cross-platform build target for static checks
 xplatform-build:
 	GOOS=linux GOARCH=arm64 ./scripts/build true "" false
 	GOOS=windows GOARCH=amd64 ./scripts/build true "" false
@@ -156,7 +156,7 @@ benchmark-test:
 
 .PHONY: build-image-for-ecr upload-images replicate-images
 
-build-image-for-ecr: netkitten volumes-test image-cleanup-test-images fluentd
+build-image-for-ecr: netkitten volumes-test image-cleanup-test-images fluentd exec-command-agent-test
 
 upload-images: build-image-for-ecr
 	@./scripts/upload-images $(STANDARD_REGION) $(STANDARD_REPOSITORY)
@@ -225,7 +225,11 @@ volumes-test:
 	$(MAKE) -C misc/volumes-test $(MFLAGS)
 
 # Run our 'test' registry needed for integ tests
-test-registry: netkitten volumes-test pause-container image-cleanup-test-images fluentd
+test-registry: netkitten volumes-test pause-container image-cleanup-test-images fluentd exec-command-agent-test
+
+exec-command-agent-test:
+	$(MAKE) -C misc/exec-command-agent-test $(MFLAGS)
+
 	@./scripts/setup-test-registry
 
 .PHONY: fluentd gremlin image-cleanup-test-images
@@ -274,7 +278,7 @@ static-check: gocyclo govet importcheck gogenerate-check
 	# use default checks of staticcheck tool, except style checks (-ST*) and depracation checks (-SA1019)
 	# depracation checks have been left out for now; removing their warnings requires error handling for newer suggested APIs, changes in function signatures and their usages.
 	# https://github.com/dominikh/go-tools/tree/master/cmd/staticcheck
-	staticcheck -tests=false -checks "inherit,-ST*,-SA1019" ./agent/...
+	staticcheck -tests=false -checks "inherit,-ST*,-SA1019,-SA9002" ./agent/...
 
 .PHONY: goimports
 goimports:
@@ -319,6 +323,7 @@ clean:
 	-$(MAKE) -C $(ECS_CNI_REPOSITORY_SRC_DIR) clean
 	-$(MAKE) -C misc/netkitten $(MFLAGS) clean
 	-$(MAKE) -C misc/volumes-test $(MFLAGS) clean
+	-$(MAKE) -C misc/exec-command-agent-test $(MFLAGS) clean
 	-$(MAKE) -C misc/gremlin $(MFLAGS) clean
 	-$(MAKE) -C misc/image-cleanup-test-images $(MFLAGS) clean
 	-$(MAKE) -C misc/container-health $(MFLAGS) clean

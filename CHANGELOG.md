@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.50.2
+* Bug - Fix potential deadlock due to seelog's string marshalling of task struct [#2811](https://github.com/aws/amazon-ecs-agent/pull/2811)
+
+## 1.50.1
+* Enhancement - Implementation of structured logs on top of seelog [#2797](https://github.com/aws/amazon-ecs-agent/pull/2797)
+* Bug - Fixed a task status deadlock and pulled container state for cached images when ECS_PULL_DEPENDENT_CONTAINERS_UPFRONT is enabled [#2800](https://github.com/aws/amazon-ecs-agent/pull/2800)
+
+## 1.50.0
+* Feature - Allows ECS customers to execute interactive commands inside containers [#2798](https://github.com/aws/amazon-ecs-agent/pull/2798)
+* Enhancement - Add error responses into TMDEv4 taskWithTags responses [#2789](https://github.com/aws/amazon-ecs-agent/pull/2789)
+* Bug - Fixed the number of cpu units the Agent will reserve for the Linux container instances [#2783](https://github.com/aws/amazon-ecs-agent/pull/2783)
+
+## 1.49.0
+* Enhancement - Allow task metadata endpoint to return metadata for task when some of the container does not have network metadata [#2747](https://github.com/aws/amazon-ecs-agent/pull/2747)
+* Enhancement - Improve error and info logging around credentials requests [#2705](https://github.com/aws/amazon-ecs-agent/pull/2705)
+* Enhancement - Introduce new environment variable ECS_CONTAINER_CREATE_TIMEOUT to make Docker create timeout configurable. Minimum value is 1m. Default value is 4m. [#2781](https://github.com/aws/amazon-ecs-agent/pull/2781)
+* Bug - Add missing error handling in getContainerStatsNotStreamed. [#2757](https://github.com/aws/amazon-ecs-agent/pull/2757)
+
 ## 1.48.1
 * Bug - Fix an edge case that can cause container dependency deadlock [#2734](https://github.com/aws/amazon-ecs-agent/pull/2734)
 * Bug - Revert the change that adds client token persistence [#2708](https://github.com/aws/amazon-ecs-agent/pull/2708)

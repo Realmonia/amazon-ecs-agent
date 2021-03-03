@@ -91,7 +91,7 @@ type Config struct {
 
 	// PollMetrics configures whether metrics are constantly streamed for each container or
 	// polled on interval instead.
-	PollMetrics BooleanDefaultTrue
+	PollMetrics BooleanDefaultFalse
 
 	// PollingMetricsWaitDuration configures how long a container should wait before polling metrics
 	// again when PollMetrics is set to true
@@ -111,6 +111,9 @@ type Config struct {
 
 	// ContainerStartTimeout specifies the amount of time to wait to start a container
 	ContainerStartTimeout time.Duration
+
+	// ContainerCreateTimeout specifies the amount of time to wait to create a container
+	ContainerCreateTimeout time.Duration
 
 	// DependentContainersPullUpfront specifies whether pulling images upfront should be applied to this agent.
 	// Default false

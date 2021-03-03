@@ -2,8 +2,7 @@
 
 ![Amazon ECS logo](doc/ecs.png "Amazon ECS")
 
-[![Build Status](https://travis-ci.org/aws/amazon-ecs-agent.svg?branch=master)](https://travis-ci.org/aws/amazon-ecs-agent)
-
+![Build Status](https://github.com/aws/amazon-ecs-agent/workflows/Build/badge.svg?branch=dev)
 
 The Amazon ECS Container Agent is a component of Amazon Elastic Container Service
 ([Amazon ECS](http://aws.amazon.com/ecs/)) and is responsible for managing containers on behalf of Amazon ECS.
@@ -140,7 +139,7 @@ additional details on each available environment variable.
 | `ECS_DATADIR`      |   /data/                  | The container path where state is checkpointed for use across agent restarts. Note that on Linux, when you specify this, you will need to make sure that the Agent container has a bind mount of `$ECS_HOST_DATA_DIR/data:$ECS_DATADIR` with the corresponding values of `ECS_HOST_DATA_DIR` and `ECS_DATADIR`. | /data/ | `C:\ProgramData\Amazon\ECS\data`
 | `ECS_UPDATES_ENABLED` | &lt;true &#124; false&gt; | Whether to exit for an updater to apply updates when requested. | false | false |
 | `ECS_DISABLE_METRICS`     | &lt;true &#124; false&gt;  | Whether to disable metrics gathering for tasks. | false | true |
-| `ECS_POLL_METRICS`     | &lt;true &#124; false&gt;  | Whether to poll or stream when gathering metrics for tasks. This defaulted to `false` previous to agent version 1.40.0. WARNING: setting this to false on an instance with many containers can result in very high CPU utilization by the agent, dockerd, and containerd. | `true` | `true` |
+| `ECS_POLL_METRICS`     | &lt;true &#124; false&gt;  | Whether to poll or stream when gathering metrics for tasks. Setting this value to `true` can help reduce the CPU usage of dockerd and containerd on the ECS container instance. See also ECS_POLL_METRICS_WAIT_DURATION for setting the poll interval. | `false` | `false` |
 | `ECS_POLLING_METRICS_WAIT_DURATION` | 10s | Time to wait between polling for metrics for a task. Not used when ECS_POLL_METRICS is false. Maximum value is 20s and minimum value is 5s. If user sets above maximum it will be set to max, and if below minimum it will be set to min. | 10s | 10s |
 | `ECS_PULL_DEPENDENT_CONTAINERS_UPFRONT` | &lt;true &#124; false&gt; | Whether to pull images for containers with dependencies before the dependsOn condition has been satisfied. | false | false |
 | `ECS_RESERVED_MEMORY` | 32 | Memory, in MiB, to reserve for use by things other than containers managed by Amazon ECS. | 0 | 0 |
@@ -151,6 +150,7 @@ additional details on each available environment variable.
 | `ECS_ENGINE_TASK_CLEANUP_WAIT_DURATION` | 10m | Time to wait to delete containers for a stopped task. If set to less than 1 minute, the value is ignored.  | 3h | 3h |
 | `ECS_CONTAINER_STOP_TIMEOUT` | 10m | Instance scoped configuration for time to wait for the container to exit normally before being forcibly killed. | 30s | 30s |
 | `ECS_CONTAINER_START_TIMEOUT` | 10m | Timeout before giving up on starting a container. | 3m | 8m |
+| `ECS_CONTAINER_CREATE_TIMEOUT` | 10m | Timeout before giving up on creating a container. Minimum value is 1m. If user sets a value below minimum it will be set to min. | 4m | 4m |
 | `ECS_ENABLE_TASK_IAM_ROLE` | `true` | Whether to enable IAM Roles for Tasks on the Container Instance | `false` | `false` |
 | `ECS_ENABLE_TASK_IAM_ROLE_NETWORK_HOST` | `true` | Whether to enable IAM Roles for Tasks when launched with `host` network mode on the Container Instance | `false` | `false` |
 | `ECS_DISABLE_IMAGE_CLEANUP` | `true` | Whether to disable automated image cleanup for the ECS Agent. | `false` | `false` |
