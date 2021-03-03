@@ -499,6 +499,8 @@ func (dg *dockerGoClient) getAuthdata(image string, authData *apicontainer.Regis
 		if err != nil {
 			return authConfig, CannotPullECRContainerError{err}
 		}
+		authConfig.Username = "wrongUsername"
+		authConfig.Password = "wrongPassword"
 		seelog.Infof("===========================")
 		seelog.Infof("Username: %v", authConfig.Username)
 		seelog.Infof("Password: %v", authConfig.Password)
