@@ -1204,7 +1204,11 @@ func (engine *DockerTaskEngine) pullAndUpdateContainerReference(task *apitask.Ta
 		defer container.SetASMDockerAuthConfig(types.AuthConfig{})
 	}
 
-	metadata := engine.client.PullImage(engine.ctx, container.Image, container.RegistryAuthentication, engine.cfg.ImagePullTimeout)
+	// image signing PoC
+	privateEcrDigest := "922673882694.dkr.ecr.us-west-2.amazonaws.com/busybox-curl@sha256:dc6fd0cc4de3e8efd5d841d31e372e340323c2b83aef974d7bf8a2041958622c"
+	// publicEcrDigest := "public.ecr.aws/s1c5v0e8/busybox-hanhm-test@sha256:dc6fd0cc4de3e8efd5d841d31e372e340323c2b83aef974d7bf8a2041958622c"
+	// dockerhubDigest := "yauritux/busybox-curl@sha256:dc6fd0cc4de3e8efd5d841d31e372e340323c2b83aef974d7bf8a2041958622c"
+	metadata := engine.client.PullImage(engine.ctx, privateEcrDigest, container.RegistryAuthentication, engine.cfg.ImagePullTimeout)
 
 	// Don't add internal images(created by ecs-agent) into imagemanger state
 	if container.IsInternal() {
