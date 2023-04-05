@@ -30,7 +30,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	mock_dockerapi "github.com/aws/amazon-ecs-agent/agent/dockerclient/dockerapi/mocks"
-	"github.com/containernetworking/cni/pkg/types/current"
+	current "github.com/containernetworking/cni/pkg/types/040"
 	"github.com/golang/mock/gomock"
 )
 

@@ -24,7 +24,7 @@ import (
 	time "time"
 
 	ecscni "github.com/aws/amazon-ecs-agent/agent/ecscni"
-	current "github.com/containernetworking/cni/pkg/types/current"
+	current "github.com/containernetworking/cni/pkg/types/040"
 	gomock "github.com/golang/mock/gomock"
 )
 

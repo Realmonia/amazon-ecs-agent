@@ -25,7 +25,7 @@ import (
 	apieni "github.com/aws/amazon-ecs-agent/agent/api/eni"
 	"github.com/aws/amazon-ecs-agent/agent/dockerclient"
 	"github.com/cihub/seelog"
-	"github.com/containernetworking/cni/pkg/types/current"
+	current "github.com/containernetworking/cni/pkg/types/040"
 	"github.com/docker/docker/api/types"
 	"github.com/pkg/errors"
 )

@@ -18,7 +18,7 @@ import (
 
 	apieni "github.com/aws/amazon-ecs-agent/agent/api/eni"
 	"github.com/aws/amazon-ecs-agent/agent/dockerclient/dockerapi"
-	"github.com/containernetworking/cni/pkg/types/current"
+	current "github.com/containernetworking/cni/pkg/types/040"
 )
 
 // NamespaceHelper defines the methods for performing additional actions to setup/clean the task namespace.

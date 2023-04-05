@@ -16,6 +16,7 @@ package ecscni
 import (
 	"context"
 	"encoding/json"
+	current "github.com/containernetworking/cni/pkg/types/040"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -25,7 +26,6 @@ import (
 	"github.com/aws/amazon-ecs-agent/agent/logger"
 	"github.com/cihub/seelog"
 	"github.com/containernetworking/cni/libcni"
-	"github.com/containernetworking/cni/pkg/types/current"
 	"github.com/pkg/errors"
 )
 

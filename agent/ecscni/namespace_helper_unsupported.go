@@ -18,9 +18,9 @@ package ecscni
 
 import (
 	"context"
+	current "github.com/containernetworking/cni/pkg/types/040"
 
 	apieni "github.com/aws/amazon-ecs-agent/agent/api/eni"
-	"github.com/containernetworking/cni/pkg/types/current"
 )
 
 // ConfigureTaskNamespaceRouting executes the commands required for setting up appropriate routing inside task namespace.

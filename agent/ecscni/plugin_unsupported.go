@@ -19,9 +19,8 @@ package ecscni
 import (
 	"context"
 	"errors"
+	current "github.com/containernetworking/cni/pkg/types/040"
 	"time"
-
-	"github.com/containernetworking/cni/pkg/types/current"
 )
 
 const (
