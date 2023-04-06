@@ -262,14 +262,10 @@ type ImagePullResponse struct {
 }
 
 func (dg *dockerGoClient) WithVersion(version dockerclient.DockerVersion) DockerClient {
-	containerdClientWrapper, err := NewContainerd()
-	if err != nil {
-		seelog.Errorf("Not able to initialize containerd client with error %v", err)
-		return nil
-	}
+
 	return &dockerGoClient{
 		sdkClientFactory: dg.sdkClientFactory,
-		containerdClient: containerdClientWrapper,
+		containerdClient: dg.containerdClient,
 		version:          version,
 		auth:             dg.auth,
 		config:           dg.config,
@@ -290,6 +286,12 @@ func NewDockerGoClient(sdkclientFactory sdkclientfactory.Factory,
 		return nil, err
 	}
 
+	containerdClientWrapper, err := NewContainerd()
+	if err != nil {
+		seelog.Errorf("Not able to initialize containerd client with error %v", err)
+		return nil, err
+	}
+
 	// Even if we have a DockerClient, the daemon might not be running. Ping from both clients
 	// to ensure it's up.
 	_, err = sdkclient.Ping(ctx)
@@ -305,6 +307,7 @@ func NewDockerGoClient(sdkclientFactory sdkclientfactory.Factory,
 	}
 	return &dockerGoClient{
 		sdkClientFactory: sdkclientFactory,
+		containerdClient: containerdClientWrapper,
 		auth:             dockerauth.NewDockerAuthProvider(cfg.EngineAuthType, dockerAuthData),
 		ecrClientFactory: ecr.NewECRFactory(cfg.AcceptInsecureCert),
 		ecrTokenCache:    async.NewLRUCache(tokenCacheSize, tokenCacheTTL),
