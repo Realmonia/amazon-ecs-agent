@@ -1497,6 +1497,7 @@ func (dg *dockerGoClient) Stats(ctx context.Context, id, name, taskArn string, i
 
 			if err != nil {
 				errC <- err
+				seelog.Debugf("!!!Process error %v", err)
 				return
 			}
 			select {
@@ -1530,6 +1531,7 @@ func (dg *dockerGoClient) Stats(ctx context.Context, id, name, taskArn string, i
 					ID:   id,
 				}
 				if err != nil {
+					seelog.Debugf("!!!Process error %v", err)
 					errC <- err
 					return
 				}
@@ -1542,6 +1544,7 @@ func (dg *dockerGoClient) Stats(ctx context.Context, id, name, taskArn string, i
 		}()
 	}
 
+	seelog.Debugf("!!!error returned %v", err)
 	return statsC, errC
 }
 
