@@ -188,15 +188,6 @@ func (d *containerd) cgToDockerCPUStats(
 			log.Warn("Skip updating nil cpu usage")
 		}
 
-		// For warmpool instances, the cpuacct.usage_percpu file (cgroup file from where the percpu usages are read)
-		// has random number of 0's. For the firecracker platform, the microVM does not have these extra 0's
-		// in the usage file, making the percpu_usage array have elements equal to the #onlineCPUs.
-		// To make output consistent, correct the length of percpuUsage array from an array with random number of 0's
-		// to an array with elements = number of onlineCPUs (i.e. default 2).
-		if len(dockerStats.CPUStats.CPUUsage.PercpuUsage) > int(onlineCPU) {
-			dockerStats.CPUStats.CPUUsage.PercpuUsage = dockerStats.CPUStats.CPUUsage.PercpuUsage[0:int(onlineCPU)]
-		}
-
 		if previousContainerStats != nil {
 			dockerStats.PreCPUStats = previousContainerStats.CPUStats
 		} else {
