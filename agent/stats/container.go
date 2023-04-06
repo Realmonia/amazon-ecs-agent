@@ -138,6 +138,7 @@ func (container *StatsContainer) processStatsStream() error {
 			}
 			err := validateDockerStats(rawStat)
 			if err != nil {
+				seelog.Debugf("!!!What error is this? %v", err)
 				return err
 			}
 
