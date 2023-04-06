@@ -65,6 +65,7 @@ type ContainerMetadata struct {
 	DockerID    string    `json:"-"`
 	Name        string    `json:"-"`
 	NetworkMode string    `json:"-"`
+	TaskArn     string    `json:"-"`
 	StartedAt   time.Time `json:"-"`
 }
 

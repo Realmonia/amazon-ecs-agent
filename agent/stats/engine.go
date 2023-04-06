@@ -346,7 +346,7 @@ func (engine *DockerStatsEngine) addContainerUnsafe(dockerID string) (*StatsCont
 		return nil, nil, errors.Errorf("stats add container: task is terminal, ignoring container: %s, task: %s", dockerID, task.Arn)
 	}
 
-	statsContainer, err := newStatsContainer(dockerID, engine.client, engine.resolver, engine.config)
+	statsContainer, err := newStatsContainer(dockerID, engine.client, engine.resolver, engine.config, task.Arn)
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "could not map docker container ID to container, ignoring container: %s", dockerID)
 	}

@@ -28,7 +28,7 @@ import (
 )
 
 func newStatsContainer(dockerID string, client dockerapi.DockerClient, resolver resolver.ContainerMetadataResolver,
-	cfg *config.Config) (*StatsContainer, error) {
+	cfg *config.Config, taskArn string) (*StatsContainer, error) {
 	dockerContainer, err := resolver.ResolveContainer(dockerID)
 	if err != nil {
 		return nil, err
@@ -40,6 +40,7 @@ func newStatsContainer(dockerID string, client dockerapi.DockerClient, resolver 
 			Name:        dockerContainer.Container.Name,
 			NetworkMode: dockerContainer.Container.GetNetworkMode(),
 			StartedAt:   dockerContainer.Container.GetStartedAt(),
+			TaskArn:     taskArn,
 		},
 		ctx:      ctx,
 		cancel:   cancel,
@@ -107,11 +108,13 @@ func (container *StatsContainer) collect() {
 
 func (container *StatsContainer) processStatsStream() error {
 	dockerID := container.containerMetadata.DockerID
+	name := container.containerMetadata.Name
+	taskArn := container.containerMetadata.TaskArn
 	seelog.Debugf("Collecting stats for container %s", dockerID)
 	if container.client == nil {
 		return errors.New("container processStatsStream: Client is not set.")
 	}
-	dockerStats, errC := container.client.Stats(container.ctx, dockerID, dockerclient.StatsInactivityTimeout)
+	dockerStats, errC := container.client.Stats(container.ctx, dockerID, name, taskArn, dockerclient.StatsInactivityTimeout)
 
 	returnError := false
 	for {

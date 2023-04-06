@@ -190,7 +190,7 @@ type DockerClient interface {
 
 	// Stats returns a channel of stat data for the specified container. A context should be provided so the request can
 	// be canceled.
-	Stats(context.Context, string, time.Duration) (<-chan *types.StatsJSON, <-chan error)
+	Stats(context.Context, string, string, string, time.Duration) (<-chan *types.StatsJSON, <-chan error)
 
 	// Version returns the version of the Docker daemon.
 	Version(context.Context, time.Duration) (string, error)
@@ -233,6 +233,7 @@ type DockerClient interface {
 // TODO Remove clientfactory field once all API calls are migrated to sdkclientFactory
 type dockerGoClient struct {
 	sdkClientFactory         sdkclientfactory.Factory
+	containerdClient         *containerd
 	version                  dockerclient.DockerVersion
 	ecrClientFactory         ecr.ECRFactory
 	auth                     dockerauth.DockerAuthProvider
@@ -261,8 +262,14 @@ type ImagePullResponse struct {
 }
 
 func (dg *dockerGoClient) WithVersion(version dockerclient.DockerVersion) DockerClient {
+	containerdClientWrapper, err := NewContainerd()
+	if err != nil {
+		seelog.Errorf("Not able to initialize containerd client with error %v", err)
+		return nil
+	}
 	return &dockerGoClient{
 		sdkClientFactory: dg.sdkClientFactory,
+		containerdClient: containerdClientWrapper,
 		version:          version,
 		auth:             dg.auth,
 		config:           dg.config,
@@ -1399,7 +1406,7 @@ func (dg *dockerGoClient) APIVersion() (dockerclient.DockerVersion, error) {
 }
 
 // Stats returns a channel of *types.StatsJSON entries for the container.
-func (dg *dockerGoClient) Stats(ctx context.Context, id string, inactivityTimeout time.Duration) (<-chan *types.StatsJSON, <-chan error) {
+func (dg *dockerGoClient) Stats(ctx context.Context, id, name, taskArn string, inactivityTimeout time.Duration) (<-chan *types.StatsJSON, <-chan error) {
 	subCtx, cancelRequest := context.WithCancel(ctx)
 
 	errC := make(chan error, 1)
@@ -1460,14 +1467,29 @@ func (dg *dockerGoClient) Stats(ctx context.Context, id string, inactivityTimeou
 			}
 		}()
 	} else {
-		seelog.Infof("DockerGoClient: Starting to Poll for metrics for container %s", id)
-
+		// seelog.Infof("DockerGoClient: Starting to Poll for metrics for container %s", id)
+		seelog.Infof("PoC: starting to poll for metrics using containerd API for container %s", id)
 		go func() {
 			defer cancelRequest()
 			defer close(statsC)
 			// we need to start by getting container stats so that the task stats
 			// endpoint will be populated immediately.
-			stats, err := getContainerStatsNotStreamed(client, subCtx, id, pollStatsTimeout)
+			// stats, err := getContainerStatsNotStreamed(client, subCtx, id, pollStatsTimeout)
+			stats, err := dg.containerdClient.Metrics(ctx, id, name, taskArn, 0, nil)
+			transformedStats := &types.StatsJSON{
+				Stats: types.Stats{
+					Read:        stats.Read,
+					PreRead:     stats.PreRead,
+					PidsStats:   stats.PidsStats,
+					BlkioStats:  stats.BlkioStats,
+					CPUStats:    stats.CPUStats,
+					PreCPUStats: stats.PreCPUStats,
+					MemoryStats: stats.MemoryStats,
+				},
+				Name: name,
+				ID:   id,
+			}
+
 			if err != nil {
 				errC <- err
 				return
@@ -1475,7 +1497,7 @@ func (dg *dockerGoClient) Stats(ctx context.Context, id string, inactivityTimeou
 			select {
 			case <-ctx.Done():
 				return
-			case statsC <- stats:
+			case statsC <- transformedStats:
 			}
 			// sleeping here jitters the time at which the ticker is created, so that
 			// containers do not synchronize on calling the docker stats api.
@@ -1485,7 +1507,21 @@ func (dg *dockerGoClient) Stats(ctx context.Context, id string, inactivityTimeou
 			statPollTicker := time.NewTicker(dg.config.PollingMetricsWaitDuration)
 			defer statPollTicker.Stop()
 			for range statPollTicker.C {
-				stats, err := getContainerStatsNotStreamed(client, subCtx, id, pollStatsTimeout)
+				// stats, err := getContainerStatsNotStreamed(client, subCtx, id, pollStatsTimeout)
+				stats, err := dg.containerdClient.Metrics(ctx, id, name, taskArn, 0, nil)
+				transformedStats := &types.StatsJSON{
+					Stats: types.Stats{
+						Read:        stats.Read,
+						PreRead:     stats.PreRead,
+						PidsStats:   stats.PidsStats,
+						BlkioStats:  stats.BlkioStats,
+						CPUStats:    stats.CPUStats,
+						PreCPUStats: stats.PreCPUStats,
+						MemoryStats: stats.MemoryStats,
+					},
+					Name: name,
+					ID:   id,
+				}
 				if err != nil {
 					errC <- err
 					return
@@ -1493,7 +1529,7 @@ func (dg *dockerGoClient) Stats(ctx context.Context, id string, inactivityTimeou
 				select {
 				case <-ctx.Done():
 					return
-				case statsC <- stats:
+				case statsC <- transformedStats:
 				}
 			}
 		}()
