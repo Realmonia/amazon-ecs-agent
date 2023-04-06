@@ -3,6 +3,7 @@ package dockerapi
 import (
 	"bufio"
 	"context"
+	"github.com/cihub/seelog"
 	log "github.com/cihub/seelog"
 	cgroups "github.com/containerd/cgroups/stats/v1"
 	"github.com/containerd/containerd/namespaces"
@@ -319,8 +320,10 @@ func (d *containerd) Metrics(ctx context.Context,
 	onlineCPU uint32,
 	previousContainerStats *DockerStatsJSON,
 ) (*DockerStatsJSON, error) {
+	seelog.Debugf("!!!Metrics called for cid: %v, cname: %v, taskArn: %v", containerId, containerName, taskArn)
 	ctx = namespaces.WithNamespace(ctx, "moby")
 	_, task, err := d.getContainerdTask(ctx, containerId)
+	seelog.Debugf("!!!containerd task: %v and error: %v", task, err)
 	if err != nil {
 		return nil, err
 	}
@@ -328,7 +331,7 @@ func (d *containerd) Metrics(ctx context.Context,
 	if err != nil {
 		return nil, err
 	}
-
+	seelog.Debugf("!!!containerd task metrics: %v and error: %v", metric, err)
 	anydata, err := typeurl.UnmarshalAny(metric.Data)
 	if err != nil {
 		return nil, err
@@ -337,7 +340,7 @@ func (d *containerd) Metrics(ctx context.Context,
 	if !ok {
 		return nil, errors.New("cannot parse container metric data")
 	}
-
+	seelog.Debugf("!!!containerd task metrics data: %v", data)
 	s := d.cgroupStatsToDockerStats(containerName, taskArn, data, onlineCPU, previousContainerStats)
 	return s, nil
 }
