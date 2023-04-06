@@ -1475,9 +1475,9 @@ func (dg *dockerGoClient) Stats(ctx context.Context, id, name, taskArn string, i
 			// we need to start by getting container stats so that the task stats
 			// endpoint will be populated immediately.
 			dstats, err := getContainerStatsNotStreamed(client, subCtx, id, pollStatsTimeout)
-			seelog.Debugf("!!!Docker  metrics Result: %v", dstats)
+			seelog.Debugf("!!!Docker metrics Result: %v and Error: %v", dstats, err)
 			stats, err := dg.containerdClient.Metrics(ctx, id, name, taskArn, 0, nil)
-			seelog.Debugf("!!!Containerd metrics Result: %v", stats)
+			seelog.Debugf("!!!Containerd metrics Result: %v and Error: %v", stats, err)
 			transformedStats := &types.StatsJSON{
 				Stats: types.Stats{
 					Read:        stats.Read,
@@ -1510,9 +1510,9 @@ func (dg *dockerGoClient) Stats(ctx context.Context, id, name, taskArn string, i
 			defer statPollTicker.Stop()
 			for range statPollTicker.C {
 				dstats, err := getContainerStatsNotStreamed(client, subCtx, id, pollStatsTimeout)
-				seelog.Debugf("!!!Docker  metrics Result: %v", dstats)
+				seelog.Debugf("!!!Docker metrics Result: %v and Error: %v", dstats, err)
 				stats, err := dg.containerdClient.Metrics(ctx, id, name, taskArn, 0, nil)
-				seelog.Debugf("!!!Containerd metrics Result: %v", stats)
+				seelog.Debugf("!!!Containerd metrics Result: %v and Error: %v", stats, err)
 				transformedStats := &types.StatsJSON{
 					Stats: types.Stats{
 						Read:        stats.Read,
