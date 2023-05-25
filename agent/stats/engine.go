@@ -474,9 +474,8 @@ func (engine *DockerStatsEngine) publishMetrics(includeServiceConnectStats bool)
 	metricsMetadata, taskMetrics, metricsErr := engine.GetInstanceMetrics(includeServiceConnectStats)
 	if metricsErr == nil {
 		metricsMessage := ecstcs.TelemetryMessage{
-			Metadata:                   metricsMetadata,
-			TaskMetrics:                taskMetrics,
-			IncludeServiceConnectStats: includeServiceConnectStats,
+			Metadata:    metricsMetadata,
+			TaskMetrics: taskMetrics,
 		}
 		select {
 		case engine.metricsChannel <- metricsMessage:
