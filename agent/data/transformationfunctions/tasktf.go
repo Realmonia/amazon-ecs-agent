@@ -25,8 +25,15 @@ import (
 // RegisterTaskTransformationFunctions calls all registerTaskTransformationFunctions<x_y_z> in ascending order.
 // (from lower threshold version to higher threshold version) thresholdVersion is the version we introduce a breaking change in.
 // All versions below threshold version need to go through that specific transformation function
+// It then calls all registerTaskReverseTransformationFunctions<x_y_z> in descending order.
+// (from higher threshold version to lower threshold version) thresholdVersion is the version we introduce a breaking change in.
+// All versions above threshold version need to go through that specific reverse transformation function
 func RegisterTaskTransformationFunctions(t *modeltransformer.Transformer) {
+	// upgrade transformation functions
 	registerTaskTransformationFunction1_x_0(t)
+
+	// downgrade transformation functions
+	registerTaskReverseTransformationFunction1_x_0(t)
 }
 
 // registerTaskTransformationFunction1_x_0 is a template RegisterTaskTransformation function.
@@ -61,6 +68,45 @@ func registerTaskTransformationFunction1_x_0(t *modeltransformer.Transformer) {
 		}
 		err = json.Unmarshal(modifiedJSON, &newModel)
 		newModel.NetworkInterfaces = oldModel.ENIs
+		dataOut, err := json.Marshal(&newModel)
+		logger.Info(fmt.Sprintf("Transform associated with version %s finished.", thresholdVersion))
+		return dataOut, err
+	})
+	logger.Info(fmt.Sprintf("Registered transformation function with threshold %s.", thresholdVersion))
+}
+
+// registerTaskReverseTransformationFunction1_x_0 is a template RegisterTaskTransformation function.
+// It registers the transformation functions that translate the task model from models.Task_1_x_0 to models.Task_1_0_0 (this is a downgrade!)
+// Future addition to transformation functions should follow the same pattern. This current performs noop
+// TODO: edit this function when introducing first actual transformation function, and add unit test
+func registerTaskReverseTransformationFunction1_x_0(t *modeltransformer.Transformer) {
+	thresholdVersion := "99.0.0" // this assures it never actually gets executed
+	t.AddTaskReverseTransformationFunctions(thresholdVersion, func(dataIn []byte) ([]byte, error) {
+		logger.Info(fmt.Sprintf("Executing transformation function with threshold %s.", thresholdVersion))
+		newModel := models.Task_1_0_0{}
+		oldModel := models.Task_1_x_0{}
+		var intermediate map[string]interface{}
+
+		// Load json to old model (so that we can capture some fields before it is deleted)
+		err := json.Unmarshal(dataIn, &oldModel)
+		if err != nil {
+			return nil, err
+		}
+
+		// Load json to intermediate model to process
+		err = json.Unmarshal(dataIn, &intermediate)
+		if err != nil {
+			return nil, err
+		}
+
+		// Actual process to process
+		delete(intermediate, "ENIs")
+		modifiedJSON, err := json.Marshal(intermediate)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(modifiedJSON, &newModel)
+		newModel.ENIs = oldModel.NetworkInterfaces
 		dataOut, err := json.Marshal(&newModel)
 		logger.Info(fmt.Sprintf("Transform associated with version %s finished.", thresholdVersion))
 		return dataOut, err

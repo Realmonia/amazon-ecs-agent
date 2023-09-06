@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	expectedTaskTransformationChainLength = 1
+	expectedTaskTransformationChainLength = 1 * 2 // number of models * 2 (upgrade & downgrade)
 )
 
 func TestRegisterTaskTransformationFunctions(t *testing.T) {

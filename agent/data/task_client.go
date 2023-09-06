@@ -56,12 +56,17 @@ func (c *client) GetTasks() ([]*apitask.Task, error) {
 			agentVersionInDB, err := c.GetMetadata(AgentVersionKey)
 			if err != nil {
 				logger.Info(emptyAgentVersionMsg)
+			} else if version.Version == agentVersionInDB {
+				logger.Info(equalAgentVersionMsg)
+			} else if c.transformer.IsUpgrade(version.Version, agentVersionInDB) {
+				data, err = c.transformer.TransformTask(agentVersionInDB, data, true)
+				if err != nil {
+					return err
+				}
 			} else {
-				if c.transformer.IsUpgrade(version.Version, agentVersionInDB) {
-					data, err = c.transformer.TransformTask(agentVersionInDB, data)
-					if err != nil {
-						return err
-					}
+				data, err = c.transformer.TransformTask(version.Version, data, true)
+				if err != nil {
+					return err
 				}
 			}
 			if err = json.Unmarshal(data, &task); err != nil {

@@ -36,6 +36,7 @@ const (
 	eniAttachmentsBucketName = "eniattachments"
 	metadataBucketName       = "metadata"
 	emptyAgentVersionMsg     = "No version info available in boltDB. Either this is a fresh instance, or we were using state file to persist data. Transformer not applicable."
+	equalAgentVersionMsg     = "Same version detected from running agent and persisted model. No transformation needed."
 )
 
 var (

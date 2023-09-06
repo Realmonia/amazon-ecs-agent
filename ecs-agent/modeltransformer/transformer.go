@@ -22,7 +22,11 @@ import (
 )
 
 const (
-	modelTypeTask = "Task"
+	modelTypeTask           = "Task"
+	upgradeNeededMessage    = "Agent version associated with task model in boltdb %s is below threshold %s. Transformation needed."
+	upgradeSkippedMessage   = "Agent version associated with task model in boltdb %s is bigger or equal to threshold %s. Skipping transformation."
+	downgradeNeededMessage  = "Agent version associated with task model in boltdb %s is above threshold %s. Transformation needed."
+	downgradeSkippedMessage = "Agent version associated with task model in boltdb %s is bigger or equal to threshold %s. Skipping transformation."
 )
 
 // Transformer stores transformation functions for all types of objects.
@@ -31,7 +35,8 @@ const (
 // Add other transformation functions as needed. e.g. ContainerTransformationFunctions.
 // Add corresponding Transform<Type> and Add<Type>TransformationFunctions while adding other transformation functions.
 type Transformer struct {
-	taskTransformFunctions []*TransformFunc
+	taskTransformFunctions        []*TransformFunc
+	taskReverseTransformFunctions []*TransformFunc
 }
 
 type transformationFunctionClosure func([]byte) ([]byte, error)
@@ -59,18 +64,34 @@ func (t *Transformer) GetNumberOfTransformationFunctions(modelType string) int {
 }
 
 // TransformTask executes the transformation functions when version associated with model in boltdb is below the threshold
-func (t *Transformer) TransformTask(version string, data []byte) ([]byte, error) {
+func (t *Transformer) TransformTask(version string, data []byte, isUpgrade bool) ([]byte, error) {
 	var err error
 	// execute transformation functions sequentially and skip those not applicable
-	for _, transformFunc := range t.taskTransformFunctions {
-		if checkVersionSmaller(version, transformFunc.version) {
-			logger.Info(fmt.Sprintf("Agent version associated with task model in boltdb %s is below threshold %s. Transformation needed.", version, transformFunc.version))
+	var transformationFunctions []*TransformFunc
+	var transformNeededMessage, transformSkippedMessage string
+	var comparator func(string, string) bool
+	if isUpgrade {
+		logger.Info("A model upgrade is needed. Going through transformation functions")
+		transformationFunctions = t.taskTransformFunctions
+		transformNeededMessage = upgradeNeededMessage
+		transformSkippedMessage = upgradeSkippedMessage
+		comparator = checkVersionSmaller
+	} else {
+		logger.Info("A model downgrade is needed. Going through transformation functions")
+		transformationFunctions = t.taskReverseTransformFunctions
+		transformNeededMessage = downgradeNeededMessage
+		transformSkippedMessage = downgradeSkippedMessage
+		comparator = checkVersionLarger
+	}
+	for _, transformFunc := range transformationFunctions {
+		if comparator(version, transformFunc.version) {
+			logger.Info(fmt.Sprintf(transformNeededMessage, version, transformFunc.version))
 			data, err = transformFunc.function(data)
 			if err != nil {
 				return nil, err
 			}
 		} else {
-			logger.Info(fmt.Sprintf("Agent version associated with task model in boltdb %s is bigger or equal to threshold %s. Skipping transformation.", version, transformFunc.version))
+			logger.Info(fmt.Sprintf(transformSkippedMessage, version, transformFunc.version))
 			continue
 		}
 	}
@@ -85,9 +106,21 @@ func (t *Transformer) AddTaskTransformationFunctions(version string, transformat
 	})
 }
 
+// AddTaskReverseTransformationFunctions adds the downgrade transformationFunction to the handling chain
+func (t *Transformer) AddTaskReverseTransformationFunctions(version string, transformationFunc transformationFunctionClosure) {
+	t.taskReverseTransformFunctions = append(t.taskTransformFunctions, &TransformFunc{
+		version:  version,
+		function: transformationFunc,
+	})
+}
+
 // IsUpgrade checks whether the load of a persisted model to running agent is an upgrade
 func (t *Transformer) IsUpgrade(runningAgentVersion, persistedAgentVersion string) bool {
 	return checkVersionSmaller(persistedAgentVersion, runningAgentVersion)
+}
+
+func checkVersionLarger(version, threshold string) bool {
+	return checkVersionSmaller(threshold, version)
 }
 
 func checkVersionSmaller(version, threshold string) bool {

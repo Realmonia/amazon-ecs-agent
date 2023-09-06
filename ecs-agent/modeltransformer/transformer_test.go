@@ -1,6 +1,3 @@
-//go:build unit
-// +build unit
-
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License"). You may
@@ -75,6 +72,43 @@ func testTransformationFunction1200(dataIn []byte) ([]byte, error) {
 	newModel.TestFieldId = oldModel.TestFieldId
 	newModel.TestFieldContainerIds = oldModel.TestFieldContainerIds
 	newModel.TestFieldTaskVCpu, _ = strconv.Atoi(oldModel.TestFieldTaskVCpu)
+	dataOut, err := json.Marshal(&newModel)
+	return dataOut, err
+}
+
+func testReverseTransformationFunction1100(dataIn []byte) ([]byte, error) {
+	newModel := Test_task_1_0_0{}
+	oldModel := Test_task_1_10_0{}
+
+	err := json.Unmarshal(dataIn, &oldModel)
+	if err != nil {
+		return nil, err
+	}
+
+	newModel.TestFieldId = oldModel.TestFieldId
+	if len(oldModel.TestFieldContainerIds) != 0 {
+		newModel.TestFieldContainerId = oldModel.TestFieldContainerIds[0]
+	} else {
+		newModel.TestFieldContainerId = ""
+	}
+
+	newModel.TestFieldTaskVCpu = oldModel.TestFieldTaskVCpu
+	dataOut, err := json.Marshal(&newModel)
+	return dataOut, err
+}
+
+func testReverseTransformationFunction1200(dataIn []byte) ([]byte, error) {
+	newModel := Test_task_1_10_0{}
+	oldModel := Test_task_1_20_0{}
+
+	err := json.Unmarshal(dataIn, &oldModel)
+	if err != nil {
+		return nil, err
+	}
+
+	newModel.TestFieldId = oldModel.TestFieldId
+	newModel.TestFieldContainerIds = oldModel.TestFieldContainerIds
+	newModel.TestFieldTaskVCpu = strconv.Itoa(oldModel.TestFieldTaskVCpu)
 	dataOut, err := json.Marshal(&newModel)
 	return dataOut, err
 }
