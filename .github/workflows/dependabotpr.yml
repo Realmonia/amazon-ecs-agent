@@ -1,13 +1,13 @@
 name: Run Go Mod on Dependabot PRs
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   tidy:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    if: github.actor == 'dependabot[bot]'
+    if: github.actor == 'dependabot[bot]' || github.actor == 'Realmonia'
     steps:
       - uses: actions/checkout@v3
         with:
@@ -39,8 +39,10 @@ jobs:
       - name: Commit and push if changes are detected
         run: |
           cd $GITHUB_WORKSPACE/src/github.com/Realmonia/amazon-ecs-agent/
-          git config --global user.name 'github-actions'
-          git config --global user.email 'github-actions@github.com'
+          git config --global user.name 'Realmonia'
+          git config --global user.email 'han.heming@icloud.com'
           git add -A
           git commit -m "Run go mod tidy" -a || echo "No changes to commit"
           git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.REALMONIA_WORKFLOW_SECRET }}
