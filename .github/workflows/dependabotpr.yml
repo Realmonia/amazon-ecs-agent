@@ -14,7 +14,8 @@ jobs:
           submodules: true
           path: src/github.com/Realmonia/amazon-ecs-agent
           ref: ${{ github.head_ref }}
-          token: ${{ secrets.REALMONIA_WORKFLOW_SECRET }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.REALMONIA_WORKFLOW_SECRET }}
       - name: get GO_VERSION
         id: get-go-version
         run: |
