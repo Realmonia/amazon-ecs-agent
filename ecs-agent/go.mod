@@ -1,6 +1,6 @@
 module github.com/aws/amazon-ecs-agent/ecs-agent
 
-go 1.19
+go 1.22.0
 
 require (
 	github.com/Microsoft/hcsshim v0.12.0
@@ -18,7 +18,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/pborman/uuid v1.2.1
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_model v0.2.0
+	github.com/prometheus/client_model v0.6.2
 	github.com/prometheus/common v0.26.0
 	github.com/stretchr/testify v1.8.4
 	github.com/vishvananda/netlink v1.2.1-beta.2
@@ -27,7 +27,7 @@ require (
 	golang.org/x/sys v0.18.0
 	golang.org/x/tools v0.17.0
 	google.golang.org/grpc v1.62.0
-	google.golang.org/protobuf v1.33.0
+	google.golang.org/protobuf v1.36.6
 	k8s.io/api v0.28.1
 )
 
